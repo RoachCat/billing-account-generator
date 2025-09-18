@@ -25,7 +25,7 @@ export default function BillingAccountTemplate({
     <main
       id="billing-account"
       style={{
-        padding: "10px 30px",
+        padding: "10px 20px",
         fontFamily:
           "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
       }}
@@ -165,20 +165,18 @@ export default function BillingAccountTemplate({
         </div>
 
         <div style={{ marginTop: "15px" }}>
-          <div
+          <span
             style={{
               display: "flex",
-              alignItems: "center",
-              gap: "20px",
-              borderBottom: "1px solid #000000",
-              width: "42%",
+              alignItems: "baseline",
+              gap: "5px",
+              fontSize: "20px",
+              backgroundColor: "#efefef"
             }}
           >
-            <h3 style={{ fontSize: "20px", fontWeight: "bold" }}>
-              Valor total a pagar:
-            </h3>
-            <h3>$1'000.000</h3>
-          </div>
+            <h3 style={{ fontWeight: "bold" }}>Valor total a pagar:</h3>
+            <span style={{ borderBottom: "2px solid black" }}>$1'000.000</span>
+          </span>
         </div>
       </section>
 
