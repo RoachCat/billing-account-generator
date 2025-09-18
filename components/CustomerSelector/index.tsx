@@ -10,7 +10,7 @@ import { customers } from "@/utils/customers";
 export default function CustomerSelector({
   setCustomer,
 }: {
-  setCustomer: Function;
+  setCustomer: (customer: typeof customers[number] | undefined) => void;
 }) {
   const onValueChange = (identification: string) => {
     const customer = customers.find(

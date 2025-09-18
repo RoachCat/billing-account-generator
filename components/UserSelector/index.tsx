@@ -7,7 +7,11 @@ import {
 } from "@/components/ui/select";
 import { users } from "@/utils/users";
 
-export default function UserSelector({ setUser }: { setUser: Function }) {
+export default function UserSelector({
+  setUser,
+}: {
+  setUser: (customer: (typeof users)[number] | undefined) => void;
+}) {
   const onValueChange = (id: string) => {
     const user = users.find((user) => user.id === id);
     setUser(user);

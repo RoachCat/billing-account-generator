@@ -4,7 +4,11 @@ import { useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 
-export default function TasksList({ setTasks }: { setTasks: Function }) {
+export default function TasksList({
+  setTasks,
+}: {
+  setTasks: (task: string[]) => void;
+}) {
   const [tasks, setLocaleTasks] = useState<string[]>([]);
   const [newTask, setNewTask] = useState("");
 
