@@ -37,11 +37,11 @@ export default function Home() {
           </Button>
         </div>
         <div
-          // style={{
-          //   position: "absolute",
-          //   top: "-9999px",
-          //   left: "-9999px",
-          // }}
+          style={{
+            position: "absolute",
+            top: "-9999px",
+            left: "-9999px",
+          }}
         >
           <BillingAccountTemplate
             user={user!}
