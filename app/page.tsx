@@ -9,15 +9,22 @@ import { User } from "@/utils/users";
 import { Customer } from "@/utils/customers";
 import BillingAccountTemplate from "@/utils/billingAccountTemplate";
 import { downloadBillingAccountPDF } from "@/utils/downloadBillingAccount";
+import BillingValue from "@/components/BillingValue";
 
 export default function Home() {
   const [user, setUser] = useState<User>();
   const [customer, setCustomer] = useState<Customer>();
+  const [billingValue, setBillingValue] = useState<number>();
   const [tasks, setTasks] = useState<string[]>([]);
 
-  const generateBillingAccount = () => {
+  const generateBillingAccount = async () => {
     if (!user || !customer || !tasks?.length) return;
-    downloadBillingAccountPDF();
+    // Add cursor loading
+    document.body.style.cursor = "wait";
+    console.log("first");
+    await downloadBillingAccountPDF();
+    console.log("asdasd");
+    document.body.style.cursor = "default";
   };
 
   return (
@@ -26,9 +33,18 @@ export default function Home() {
         <div>
           <h1 className="font-bold text-2xl">GENERADOR DE CUENTAS DE COBRO</h1>
         </div>
-        <section className="flex gap-5">
-          <UserSelector setUser={setUser} />
-          <CustomerSelector setCustomer={setCustomer} />
+        <section className="flex flex-wrap gap-5">
+          <div className="lg:w-[calc(33.33%-13.33px)]">
+            <UserSelector setUser={setUser} />
+          </div>
+
+          <div className="lg:w-[calc(33.33%-13.33px)]">
+            <CustomerSelector setCustomer={setCustomer} />
+          </div>
+
+          <div className="lg:w-[calc(33.33%-13.33px)]">
+            <BillingValue onBillingValue={setBillingValue} />
+          </div>
         </section>
         <TasksList setTasks={setTasks} />
         <div className="flex justify-center w-full">
@@ -47,6 +63,7 @@ export default function Home() {
             user={user!}
             customer={customer!}
             tasks={tasks!}
+            value={billingValue}
           />
         </div>
       </main>

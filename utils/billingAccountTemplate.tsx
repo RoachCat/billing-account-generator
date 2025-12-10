@@ -1,3 +1,4 @@
+import addDotsToNumber from "./addDotsToNumber";
 import { Customer } from "./customers";
 import { User } from "./users";
 
@@ -5,12 +6,14 @@ export interface GenerateBillingAccountProps {
   user: User;
   customer: Customer;
   tasks: string[];
+  value?: number;
 }
 
 export default function BillingAccountTemplate({
   user,
   customer,
   tasks,
+  value = 1000000,
 }: GenerateBillingAccountProps) {
   function getCurrentDate(): string {
     const today = new Date();
@@ -171,11 +174,13 @@ export default function BillingAccountTemplate({
               alignItems: "baseline",
               gap: "5px",
               fontSize: "20px",
-              backgroundColor: "#efefef"
+              backgroundColor: "#efefef",
             }}
           >
             <h3 style={{ fontWeight: "bold" }}>Valor total a pagar:</h3>
-            <span style={{ borderBottom: "2px solid black" }}>$1'000.000</span>
+            <span style={{ borderBottom: "2px solid black" }}>
+              ${addDotsToNumber(value)}
+            </span>
           </span>
         </div>
       </section>
