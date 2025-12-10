@@ -19,11 +19,8 @@ export default function Home() {
 
   const generateBillingAccount = async () => {
     if (!user || !customer || !tasks?.length) return;
-    // Add cursor loading
     document.body.style.cursor = "wait";
-    console.log("first");
-    await downloadBillingAccountPDF();
-    console.log("asdasd");
+    await downloadBillingAccountPDF(user);
     document.body.style.cursor = "default";
   };
 

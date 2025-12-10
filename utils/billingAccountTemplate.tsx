@@ -31,6 +31,8 @@ export default function BillingAccountTemplate({
         padding: "10px 20px",
         fontFamily:
           "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
+        maxWidth: "780px",
+        width: "100%",
       }}
     >
       <div
