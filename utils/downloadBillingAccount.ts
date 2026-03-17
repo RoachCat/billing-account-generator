@@ -125,8 +125,11 @@ export async function downloadBillingAccountPDF({
   // declaración
   const declaration =
     "“Declaro bajo la gravedad de juramento que no enfrentaré costos y gastos a estas rentas al final del año, por lo cual solicito aplicar el artículo 383 del ET. *No sujeto a retención en la fuente ya que el pago es inferior a 95 UVT según el artículo 383 del estatuto tributario”.";
-  const declarationLines = pdf.splitTextToSize(declaration, contentWidth);
-  declarationLines.forEach((line) => {
+  const declarationLines = pdf.splitTextToSize(
+    declaration,
+    contentWidth
+  ) as string[];
+  declarationLines.forEach((line: string) => {
     pdf.setFont("Helvetica", "normal");
     pdf.text(line, marginX, cursorY);
     cursorY += 6;
