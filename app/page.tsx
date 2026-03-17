@@ -1,13 +1,11 @@
 "use client";
 
 import UserSelector from "@/components/UserSelector";
-import TasksList from "@/components/TasksList";
 import CustomerSelector from "@/components/CustomerSelector";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { User } from "@/utils/users";
 import { Customer } from "@/utils/customers";
-import BillingAccountTemplate from "@/utils/billingAccountTemplate";
 import { downloadBillingAccountPDF } from "@/utils/downloadBillingAccount";
 import BillingValue from "@/components/BillingValue";
 
@@ -15,12 +13,15 @@ export default function Home() {
   const [user, setUser] = useState<User>();
   const [customer, setCustomer] = useState<Customer>();
   const [billingValue, setBillingValue] = useState<number>();
-  const [tasks, setTasks] = useState<string[]>([]);
 
   const generateBillingAccount = async () => {
-    if (!user || !customer || !tasks?.length) return;
+    if (!user || !customer) return;
     document.body.style.cursor = "wait";
-    await downloadBillingAccountPDF(user);
+    await downloadBillingAccountPDF({
+      user,
+      customer,
+      value: billingValue,
+    });
     document.body.style.cursor = "default";
   };
 
@@ -43,25 +44,10 @@ export default function Home() {
             <BillingValue onBillingValue={setBillingValue} />
           </div>
         </section>
-        <TasksList setTasks={setTasks} />
         <div className="flex justify-center w-full">
           <Button onClick={generateBillingAccount} className="cursor-pointer">
             Generar
           </Button>
-        </div>
-        <div
-          style={{
-            position: "absolute",
-            top: "-9999px",
-            left: "-9999px",
-          }}
-        >
-          <BillingAccountTemplate
-            user={user!}
-            customer={customer!}
-            tasks={tasks!}
-            value={billingValue}
-          />
         </div>
       </main>
     </div>

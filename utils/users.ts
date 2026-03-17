@@ -5,6 +5,10 @@ export interface User {
   billingAccountNumber: string;
   bankAccountType: "Ahorros" | "Corriente";
   bank: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  signatureUrl?: string;
 }
 
 export const users: User[] = [
@@ -15,6 +19,9 @@ export const users: User[] = [
     billingAccountNumber: "41200034536",
     bankAccountType: "Ahorros",
     bank: "Bancolombia",
+    phone: "3122104787",
+    address: "Calle 50 #46-16. Apto 302. Itagüí",
+    city: "Itagüí",
   },
   {
     id: "1000835528",
@@ -23,5 +30,8 @@ export const users: User[] = [
     billingAccountNumber: "27500001760",
     bankAccountType: "Ahorros",
     bank: "Bancolombia",
+    phone: "3054463840",
+    address: "Calle 26 Sur # 43 A 41. Envigado",
+    city: "Envigado",
   },
 ];

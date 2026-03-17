@@ -5,14 +5,14 @@ import { User } from "./users";
 export interface GenerateBillingAccountProps {
   user: User;
   customer: Customer;
-  tasks: string[];
+  tasks?: string[];
   value?: number;
 }
 
 export default function BillingAccountTemplate({
   user,
   customer,
-  tasks,
+  tasks = [],
   value = 1000000,
 }: GenerateBillingAccountProps) {
   function getCurrentDate(): string {
@@ -24,17 +24,60 @@ export default function BillingAccountTemplate({
     return `${day}/${month}/${year}`;
   }
 
+  function getLongDate(): string {
+    const today = new Date();
+    const day = today.getDate();
+    const month = today.getMonth();
+    const year = today.getFullYear();
+
+    const months = [
+      "enero",
+      "febrero",
+      "marzo",
+      "abril",
+      "mayo",
+      "junio",
+      "julio",
+      "agosto",
+      "septiembre",
+      "octubre",
+      "noviembre",
+      "diciembre",
+    ];
+
+    return `${day} de ${months[month]} de ${year}`;
+  }
+
+  const formattedValue = addDotsToNumber(value);
+  const valueInWords = `${formattedValue} pesos`;
+  const concept =
+    tasks && tasks.length > 0
+      ? tasks.join("; ")
+      : "Desarrollo de Software de Raizco Core App";
+
   return (
     <main
       id="billing-account"
       style={{
-        padding: "10px 20px",
+        padding: "40px 60px",
         fontFamily:
           "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
         maxWidth: "780px",
         width: "100%",
       }}
     >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          marginBottom: "30px",
+          fontSize: "14px",
+        }}
+      >
+        <span>
+          {user?.city || "Itagüí"}, {getLongDate()}
+        </span>
+      </div>
       <div
         style={{
           display: "flex",
@@ -45,7 +88,7 @@ export default function BillingAccountTemplate({
         <div>
           <h3
             style={{
-              fontSize: "25px",
+              fontSize: "14px",
               marginBottom: "20px",
               fontWeight: "bold",
             }}
@@ -53,158 +96,68 @@ export default function BillingAccountTemplate({
             CUENTA DE COBRO
           </h3>
         </div>
-        <ul style={{ listStyleType: "none", padding: 0 }}>
-          <li>
-            <strong>Fecha</strong>:{" "}
-            <span style={{ textDecoration: "underline" }}>
-              {getCurrentDate()}
-            </span>
-          </li>
-        </ul>
       </div>
 
       <section
-        style={{ display: "flex", flexDirection: "column", gap: "13px" }}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "16px",
+          fontSize: "14px",
+          lineHeight: 1.5,
+        }}
       >
-        <div>
-          <h3
-            style={{
-              fontSize: "20px",
-              borderBottom: "1px solid #000000",
-              width: "100%",
-              display: "inline-block",
-              fontWeight: "bold",
-              marginBottom: "5px",
-            }}
-          >
-            Cliente
-          </h3>
-          <div style={{ marginBottom: "5px" }}>
-            <p style={{ margin: 0 }}>
-              <strong>Proyecto/Concepto:</strong>{" "}
-              <span style={{ textDecoration: "underline" }}>
-                Raizco Core App
-              </span>
-            </p>
-          </div>
-          <div>
-            <p style={{ margin: 0 }}>
-              <strong>Cliente:</strong>{" "}
-              <span style={{ textDecoration: "underline" }}>
-                {customer?.name}
-              </span>
-            </p>
-          </div>
-        </div>
-        <div>
-          <h3
-            style={{
-              fontSize: "20px",
-              borderBottom: "1px solid #000000",
-              width: "100%",
-              fontWeight: "bold",
-              marginBottom: "5px",
-            }}
-          >
-            A nombre de (quien cobra)
-          </h3>
-          <div style={{ marginBottom: "5px" }}>
-            <p style={{ margin: 0 }}>
-              <strong>Nombre:</strong>{" "}
-              <span style={{ textDecoration: "underline" }}>{user?.name}</span>
-            </p>
-          </div>
-          <div style={{ display: "flex", gap: "20px" }}>
-            <p style={{ margin: 0 }}>
-              <strong>CC / NIT:</strong>{" "}
-              <span style={{ textDecoration: "underline" }}>{user?.id}</span>
-            </p>
-            <p style={{ margin: 0 }}>
-              <strong>Correo electrónico:</strong>{" "}
-              <span style={{ textDecoration: "underline" }}>{user?.email}</span>
-            </p>
-          </div>
-        </div>
+        <p style={{ margin: 0 }}>
+          La empresa <strong>{customer?.name}</strong> identificada con NIT{" "}
+          <strong>{customer?.identification}</strong> debe a{" "}
+          <strong>{user?.name}</strong> identificado con Cédula de Ciudadanía{" "}
+          <strong>{user?.id}</strong> de <strong>{user?.city}</strong> la suma
+          de <strong>{valueInWords}</strong> (
+          <strong>${formattedValue}</strong>) por concepto de:{" "}
+          <strong>{concept}</strong>.
+        </p>
+        <p style={{ margin: 0 }}>
+          “Declaro bajo la gravedad de juramento que no enfrentaré costos y
+          gastos a estas rentas al final del año, por lo cual solicito aplicar
+          el artículo 383 del ET. *No sujeto a retención en la fuente ya que el
+          pago es inferior a 95 UVT según el artículo 383 del estatuto
+          tributario”.
+        </p>
+
+        <p style={{ margin: 0 }}>Cordialmente:</p>
 
         <div>
-          <h3
-            style={{
-              fontSize: "20px",
-              borderBottom: "1px solid #000000",
-              width: "100%",
-              fontWeight: "bold",
-              marginBottom: "5px",
-            }}
-          >
-            Medio de pago
-          </h3>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateRows: "1fr 1fr",
-              gridTemplateColumns: "1fr 1fr",
-              rowGap: "5px",
-            }}
-          >
+          <p style={{ margin: 0 }}>{user?.name}</p>
+          <p style={{ margin: 0 }}>
+            <strong>CC:</strong> {user?.id}
+          </p>
+          {user?.phone ? (
             <p style={{ margin: 0 }}>
-              <strong>Banco:</strong>{" "}
-              <span style={{ textDecoration: "underline" }}>{user?.bank}</span>
+              <strong>Celular:</strong> {user.phone}
             </p>
+          ) : null}
+          {user?.address ? (
             <p style={{ margin: 0 }}>
-              <strong>Tipo de cuenta:</strong>{" "}
-              <span style={{ textDecoration: "underline" }}>
-                {user?.bankAccountType}
-              </span>
+              <strong>Dirección:</strong> {user.address}
             </p>
-            <p style={{ margin: 0 }}>
-              <strong>N° de cuenta:</strong>{" "}
-              <span style={{ textDecoration: "underline" }}>
-                {user?.billingAccountNumber}
-              </span>
-            </p>
-            <p style={{ margin: 0 }}>
-              <strong>Titular:</strong>{" "}
-              <span style={{ textDecoration: "underline" }}>{user?.name}</span>
-            </p>
-          </div>
+          ) : null}
+          <p style={{ margin: 0 }}>
+            <strong>Email:</strong> {user?.email}
+          </p>
         </div>
 
-        <div style={{ marginTop: "15px" }}>
-          <span
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              gap: "5px",
-              fontSize: "20px",
-              backgroundColor: "#efefef",
-            }}
-          >
-            <h3 style={{ fontWeight: "bold" }}>Valor total a pagar:</h3>
-            <span style={{ borderBottom: "2px solid black" }}>
-              ${addDotsToNumber(value)}
-            </span>
-          </span>
+        <div style={{ marginTop: "16px" }}>
+          <p style={{ margin: 0 }}>
+            <strong>Banco:</strong> {user?.bank}
+          </p>
+          <p style={{ margin: 0 }}>
+            <strong>Tipo de cuenta:</strong> {user?.bankAccountType}
+          </p>
+          <p style={{ margin: 0 }}>
+            <strong>Número de cuenta:</strong> {user?.billingAccountNumber}
+          </p>
         </div>
       </section>
-
-      <div style={{ marginTop: "20px" }}>
-        <h3
-          style={{
-            fontSize: "20px",
-            borderBottom: "1px solid #000000",
-            width: "100%",
-            fontWeight: "bold",
-            marginBottom: "5px",
-          }}
-        >
-          ACTIVIDADES REALIZADAS
-        </h3>
-        <ul style={{ listStyleType: "none", padding: 0 }}>
-          {tasks.map((task, index) => (
-            <li key={index}>- {task}</li>
-          ))}
-        </ul>
-      </div>
     </main>
   );
 }
