@@ -1,4 +1,6 @@
-import jsPDF from "jspdf";
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+import { toCardinal } from "n2words/es-ES";
 import { User } from "./users";
 import { Customer } from "./customers";
 import addDotsToNumber from "./addDotsToNumber";
@@ -15,10 +17,16 @@ export async function downloadBillingAccountPDF({
   customer,
   value = 1000000,
 }: DownloadBillingAccountProps) {
-  const pdf = new jsPDF("p", "mm", "a4");
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const marginX = 20;
-  let cursorY = 25;
+  const typedPdfMake = pdfMake as unknown as { vfs: unknown };
+  const fontsSource = pdfFonts as unknown as {
+    pdfMake?: { vfs?: unknown };
+    default?: { pdfMake?: { vfs?: unknown } };
+  };
+  const vfs =
+    fontsSource.pdfMake?.vfs ?? fontsSource.default?.pdfMake?.vfs ?? undefined;
+  if (vfs) {
+    typedPdfMake.vfs = vfs;
+  }
 
   const months = [
     "enero",
@@ -41,187 +49,147 @@ export async function downloadBillingAccountPDF({
   } de ${today.getFullYear()}`;
 
   const formattedValue = addDotsToNumber(value);
-  const valueInWords = `${formattedValue} pesos`;
+  const valueInteger = Math.round(value);
+  const cardinal = toCardinal(valueInteger);
+  const valueInWords =
+    valueInteger === 1_000_000 ? `${cardinal} de pesos` : `${cardinal} pesos`;
   const concept = "Desarrollo de Software de Raizco Core App";
 
-  // fecha alineada a la derecha
-  pdf.setFontSize(11);
-  pdf.setFont("Helvetica", "normal");
-  pdf.text(
-    `${user.city || "Itagüí"}, ${longDate}`,
-    pageWidth - marginX,
-    cursorY,
-    { align: "right" }
-  );
+  const content: pdfMake.Content[] = [];
 
-  cursorY += 10;
-
-  // título
-  pdf.setFontSize(11);
-  pdf.setFont("Helvetica", "bold");
-  pdf.text("CUENTA DE COBRO", marginX, cursorY);
-
-  cursorY += 10;
-
-  const contentWidth = pageWidth - marginX * 2;
-
-  // párrafo principal con partes en negrilla
-  const paragraphParts: { text: string; bold: boolean }[] = [
-    { text: "La empresa ", bold: false },
-    { text: customer.name, bold: true },
-    { text: " identificada con NIT ", bold: false },
-    { text: customer.identification, bold: true },
-    { text: " debe a ", bold: false },
-    { text: user.name, bold: true },
-    { text: " identificado con Cédula de Ciudadanía ", bold: false },
-    { text: user.id, bold: true },
-    { text: " de ", bold: false },
-    { text: user.city ?? "Itagüí", bold: true },
-    { text: " la suma de ", bold: false },
-    { text: valueInWords, bold: true },
-    { text: " ($", bold: false },
-    { text: formattedValue, bold: true },
-    { text: ") por concepto de: ", bold: false },
-    { text: concept, bold: true },
-    { text: ".", bold: false },
-  ];
-
-  let currentLine = "";
-  const lines: { parts: { text: string; bold: boolean }[] }[] = [];
-  let currentParts: { text: string; bold: boolean }[] = [];
-
-  paragraphParts.forEach((part) => {
-    const tentative = currentLine + part.text;
-    const tentativeWidth = pdf.getTextWidth(tentative);
-
-    if (tentativeWidth > contentWidth && currentLine !== "") {
-      lines.push({ parts: currentParts });
-      currentLine = part.text;
-      currentParts = [part];
-    } else {
-      currentLine = tentative;
-      currentParts.push(part);
-    }
+  content.push({
+    text: `${user.city || "Itagüí"}, ${longDate}`,
+    alignment: "right",
+    fontSize: 11,
+    margin: [0, 0, 0, 16],
   });
 
-  if (currentParts.length) {
-    lines.push({ parts: currentParts });
-  }
-
-  pdf.setFontSize(11);
-
-  lines.forEach((line) => {
-    let x = marginX;
-    line.parts.forEach((part) => {
-      pdf.setFont("Helvetica", part.bold ? "bold" : "normal");
-      pdf.text(part.text, x, cursorY);
-      x += pdf.getTextWidth(part.text);
-    });
-    cursorY += 6;
+  content.push({
+    text: "CUENTA DE COBRO",
+    bold: true,
+    fontSize: 11,
+    margin: [0, 0, 0, 12],
   });
 
-  cursorY += 4;
-
-  // declaración
-  const declaration =
-    "“Declaro bajo la gravedad de juramento que no enfrentaré costos y gastos a estas rentas al final del año, por lo cual solicito aplicar el artículo 383 del ET. *No sujeto a retención en la fuente ya que el pago es inferior a 95 UVT según el artículo 383 del estatuto tributario”.";
-  const declarationLines = pdf.splitTextToSize(
-    declaration,
-    contentWidth
-  ) as string[];
-  declarationLines.forEach((line: string) => {
-    pdf.setFont("Helvetica", "normal");
-    pdf.text(line, marginX, cursorY);
-    cursorY += 6;
+  content.push({
+    text: [
+      "La empresa ",
+      { text: customer.name, bold: true },
+      " identificada con NIT ",
+      { text: customer.identification, bold: true },
+      " debe a ",
+      { text: user.name, bold: true },
+      " identificado con Cédula de Ciudadanía ",
+      { text: user.id, bold: true },
+      " de ",
+      { text: user.city ?? "Itagüí", bold: true },
+      " la suma de ",
+      { text: valueInWords, bold: true },
+      " ($",
+      { text: formattedValue, bold: true },
+      ") por concepto de: ",
+      { text: concept, bold: true },
+      ".",
+    ],
+    fontSize: 11,
+    lineHeight: 1.2,
+    margin: [0, 0, 0, 8],
   });
 
-  cursorY += 6;
+  content.push({
+    text: "“Declaro bajo la gravedad de juramento que no enfrentaré costos y gastos a estas rentas al final del año, por lo cual solicito aplicar el artículo 383 del ET. *No sujeto a retención en la fuente ya que el pago es inferior a 95 UVT según el artículo 383 del estatuto tributario”.",
+    fontSize: 11,
+    lineHeight: 1.2,
+    margin: [0, 0, 0, 12],
+  });
 
-  // cordialmente
-  pdf.text("Cordialmente:", marginX, cursorY);
+  content.push({
+    text: "Cordialmente:",
+    fontSize: 11,
+    margin: [0, 0, 0, 16],
+  });
 
-  cursorY += 12;
+  content.push({
+    text: user.name,
+    fontSize: 11,
+  });
 
-  // datos del emisor
-  pdf.setFont("Helvetica", "normal");
-  pdf.text(user.name, marginX, cursorY);
-  cursorY += 6;
-  const ccLabel = "CC:";
-  pdf.setFont("Helvetica", "bold");
-  pdf.text(ccLabel, marginX, cursorY);
-  pdf.setFont("Helvetica", "normal");
-  pdf.text(
-    ` ${user.id}`,
-    marginX + pdf.getTextWidth(ccLabel) + 2,
-    cursorY
-  );
+  content.push({
+    text: [
+      { text: "CC:", bold: true },
+      ` ${user.id}`,
+    ],
+    fontSize: 11,
+    margin: [0, 2, 0, 0],
+  });
+
   if (user.phone) {
-    cursorY += 6;
-    const phoneLabel = "Celular:";
-    pdf.setFont("Helvetica", "bold");
-    pdf.text(phoneLabel, marginX, cursorY);
-    pdf.setFont("Helvetica", "normal");
-    pdf.text(
-      ` ${user.phone}`,
-      marginX + pdf.getTextWidth(phoneLabel) + 2,
-      cursorY
-    );
+    content.push({
+      text: [
+        { text: "Celular:", bold: true },
+        ` ${user.phone}`,
+      ],
+      fontSize: 11,
+      margin: [0, 2, 0, 0],
+    });
   }
+
   if (user.address) {
-    cursorY += 6;
-    const addressLabel = "Dirección:";
-    pdf.setFont("Helvetica", "bold");
-    pdf.text(addressLabel, marginX, cursorY);
-    pdf.setFont("Helvetica", "normal");
-    pdf.text(
-      ` ${user.address}`,
-      marginX + pdf.getTextWidth(addressLabel) + 2,
-      cursorY
-    );
+    content.push({
+      text: [
+        { text: "Dirección:", bold: true },
+        ` ${user.address}`,
+      ],
+      fontSize: 11,
+      margin: [0, 2, 0, 0],
+    });
   }
-  cursorY += 6;
-  const emailLabel = "Email:";
-  pdf.setFont("Helvetica", "bold");
-  pdf.text(emailLabel, marginX, cursorY);
-  pdf.setFont("Helvetica", "normal");
-  pdf.text(
-    ` ${user.email}`,
-    marginX + pdf.getTextWidth(emailLabel) + 2,
-    cursorY
-  );
 
-  cursorY += 8;
+  content.push({
+    text: [
+      { text: "Email:", bold: true },
+      ` ${user.email}`,
+    ],
+    fontSize: 11,
+    margin: [0, 2, 0, 8],
+  });
 
-  // datos bancarios
-  const bankLabel = "Banco:";
-  pdf.setFont("Helvetica", "bold");
-  pdf.text(bankLabel, marginX, cursorY);
-  pdf.setFont("Helvetica", "normal");
-  pdf.text(
-    ` ${user.bank}`,
-    marginX + pdf.getTextWidth(bankLabel) + 2,
-    cursorY
-  );
-  cursorY += 6;
-  const accountTypeLabel = "Tipo de cuenta:";
-  pdf.setFont("Helvetica", "bold");
-  pdf.text(accountTypeLabel, marginX, cursorY);
-  pdf.setFont("Helvetica", "normal");
-  pdf.text(
-    ` ${user.bankAccountType}`,
-    marginX + pdf.getTextWidth(accountTypeLabel) + 2,
-    cursorY
-  );
-  cursorY += 6;
-  const accountNumberLabel = "Número de cuenta:";
-  pdf.setFont("Helvetica", "bold");
-  pdf.text(accountNumberLabel, marginX, cursorY);
-  pdf.setFont("Helvetica", "normal");
-  pdf.text(
-    ` ${user.billingAccountNumber}`,
-    marginX + pdf.getTextWidth(accountNumberLabel) + 2,
-    cursorY
-  );
+  content.push({
+    text: [
+      { text: "Banco:", bold: true },
+      ` ${user.bank}`,
+    ],
+    fontSize: 11,
+    margin: [0, 2, 0, 0],
+  });
 
-  pdf.save(`cuenta-cobro-${sanitizeString(user.name)}.pdf`);
+  content.push({
+    text: [
+      { text: "Tipo de cuenta:", bold: true },
+      ` ${user.bankAccountType}`,
+    ],
+    fontSize: 11,
+    margin: [0, 2, 0, 0],
+  });
+
+  content.push({
+    text: [
+      { text: "Número de cuenta:", bold: true },
+      ` ${user.billingAccountNumber}`,
+    ],
+    fontSize: 11,
+    margin: [0, 2, 0, 0],
+  });
+
+  const docDefinition = {
+    content,
+    defaultStyle: {
+      fontSize: 11,
+    },
+    pageMargins: [60, 40, 60, 40] as [number, number, number, number],
+  };
+
+  pdfMake.createPdf(docDefinition).download(
+    `cuenta-cobro-${sanitizeString(user.name)}.pdf`
+  );
 }
